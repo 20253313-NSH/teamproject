@@ -51,6 +51,7 @@ const upload = multer({
 app.use(cors())
 app.use(express.json())
 app.use(express.static('public'))
+app.use('/uploads', express.static(uploadsDir))
 
 app.get('/api/health', (_request, response) => {
   response.json({ ok: true, message: 'ClassRoom server is running' })
@@ -102,6 +103,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
           message: 'File converted to PDF and saved successfully',
           filename: path.basename(pdfPath),
           originalName: req.file.originalname,
+          url: `/uploads/${path.basename(pdfPath)}`,
         })
       } catch (convertError) {
         console.error('Conversion error:', convertError)
@@ -111,6 +113,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
           message: 'File saved successfully (conversion not available)',
           filename: req.file.filename,
           originalName: req.file.originalname,
+          url: `/uploads/${req.file.filename}`,
           note: 'PPT to PDF conversion requires LibreOffice to be installed',
         })
       }
@@ -121,6 +124,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         message: 'PDF file saved successfully',
         filename: req.file.filename,
         originalName: req.file.originalname,
+        url: `/uploads/${req.file.filename}`,
       })
     }
   } catch (error) {

@@ -36,6 +36,7 @@ function FileUploadPage() {
   }
 
   const handleFiles = async (files) => {
+    const uploadedFiles = []
     const validFiles = files.filter((file) => {
       const type = file.type.toLowerCase()
       const name = file.name.toLowerCase()
@@ -62,7 +63,7 @@ function FileUploadPage() {
         const formData = new FormData()
         formData.append('file', file)
 
-        const response = await fetch('http://localhost:3001/api/upload', {
+        const response = await fetch('/api/upload', {
           method: 'POST',
           body: formData,
         })
@@ -70,14 +71,31 @@ function FileUploadPage() {
         if (!response.ok) {
           throw new Error(`파일 업로드 실패: ${file.name}`)
         }
+
+        const data = await response.json()
+        uploadedFiles.push({
+          name: data.originalName || file.name,
+          url: data.url,
+        })
       }
 
       setUploadStatus('success')
       setIsUploading(false)
 
+      localStorage.setItem('professorUploadedFiles', JSON.stringify(uploadedFiles))
+      sessionStorage.setItem('professorViewerPayload', JSON.stringify(uploadedFiles))
+      sessionStorage.setItem('professorCurrentPdfUrl', uploadedFiles[0]?.url || '')
+      sessionStorage.setItem('professorCurrentPdfName', uploadedFiles[0]?.name || '')
+
       // 성공 후 교수 페이지로 이동
       setTimeout(() => {
-        navigate('/professor')
+        const pdfUrl = uploadedFiles[0]?.url || ''
+        navigate(`/professor/next${pdfUrl ? `?file=${encodeURIComponent(pdfUrl)}` : ''}`, {
+          state: {
+            pdfUrl,
+            pdfName: uploadedFiles[0]?.name || '',
+          },
+        })
       }, 1500)
     } catch (error) {
       console.error('Upload error:', error)
