@@ -1,22 +1,18 @@
 import { Link } from 'react-router-dom'
 import Shell from '../../layouts/Shell.jsx'
+import './ProfessorPage.css'
 
 function ProfessorPage() {
   return (
     <Shell accent="accent-professor">
-      <section className="detail-page">
-        <p className="eyebrow">Professor</p>
-        <h1>교수 페이지</h1>
-        <p className="subtitle">
-          강의 운영을 위한 공간입니다.
-        </p>
-
-        <div className="detail-actions">
-          <Link to="/" className="ghost-button">
-            메인으로 돌아가기
+      <div className="professor-content">
+        <h1>교수 자료실</h1>
+        <div className="file-upload-button-container">
+          <Link to="/professor/upload" className="add-file-button">
+            <span className="plus-icon">+</span>
           </Link>
         </div>
-      </section>
+      </div>
     </Shell>
   )
 }

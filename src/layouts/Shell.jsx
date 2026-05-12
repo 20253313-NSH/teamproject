@@ -11,8 +11,6 @@ function Shell({ accent, children }) {
       </header>
 
       <main className="content-wrap">{children}</main>
-
-      <footer className="page-footer">강의실을 디지털로 연결하세요</footer>
     </div>
   )
 }
