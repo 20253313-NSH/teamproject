@@ -69,10 +69,22 @@ function FileUploadPage() {
         })
 
         if (!response.ok) {
-          throw new Error(`파일 업로드 실패: ${file.name}`)
+          let errorMessage = `파일 업로드 실패: ${file.name}`
+          try {
+            const errorData = await response.json()
+            if (errorData?.error) {
+              errorMessage = errorData.error
+            }
+          } catch {
+            // Keep fallback error message when response body is not JSON.
+          }
+          throw new Error(errorMessage)
         }
 
         const data = await response.json()
+        if (!data?.url) {
+          throw new Error('업로드 응답에 파일 URL이 없습니다.')
+        }
         uploadedFiles.push({
           name: data.originalName || file.name,
           url: data.url,

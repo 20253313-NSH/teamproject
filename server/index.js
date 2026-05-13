@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import multer from 'multer'
-import { execSync } from 'child_process'
+import { execFileSync, execSync } from 'child_process'
 import path from 'path'
 import fs from 'fs'
 import { fileURLToPath } from 'url'
@@ -9,6 +9,25 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
 const port = process.env.PORT || 3001
+let latestUploadedFile = null
+
+const normalizeOriginalName = (name) => {
+  try {
+    const decoded = Buffer.from(name, 'latin1').toString('utf8')
+    return decoded.includes('\ufffd') ? name : decoded
+  } catch {
+    return name
+  }
+}
+
+const hasSoffice = (() => {
+  try {
+    execSync('soffice --version', { stdio: 'ignore' })
+    return true
+  } catch {
+    return false
+  }
+})()
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../uploads')
@@ -22,10 +41,9 @@ const storage = multer.diskStorage({
     cb(null, uploadsDir)
   },
   filename: (req, file, cb) => {
-    const timestamp = Date.now()
-    const ext = path.extname(file.originalname)
-    const name = path.basename(file.originalname, ext)
-    cb(null, `${name}-${timestamp}${ext}`)
+    const ext = path.extname(file.originalname).toLowerCase()
+    const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
+    cb(null, `upload-${unique}${ext}`)
   },
 })
 
@@ -72,6 +90,14 @@ app.get('/api/roles', (_request, response) => {
   ])
 })
 
+app.get('/api/latest-upload', (_request, response) => {
+  if (!latestUploadedFile) {
+    return response.status(404).json({ error: 'No uploaded file found' })
+  }
+
+  response.json(latestUploadedFile)
+})
+
 // File upload endpoint
 app.post('/api/upload', upload.single('file'), async (req, res) => {
   try {
@@ -81,40 +107,60 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
     const filePath = req.file.path
     const ext = path.extname(req.file.originalname).toLowerCase()
+    const originalName = normalizeOriginalName(req.file.originalname)
 
     // If it's a PPT file, convert to PDF
     if (ext === '.ppt' || ext === '.pptx') {
-      const pdfPath = filePath.replace(/\.(ppt|pptx)$/i, '.pdf')
+      if (!hasSoffice) {
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath)
+        }
+
+        return res.status(503).json({
+          error: 'PPT/PPTX 업로드를 처리하려면 LibreOffice(soffice) 설치가 필요합니다.',
+        })
+      }
+
+      const pdfFileName = `${path.parse(req.file.filename).name}.pdf`
+      const pdfPath = path.join(uploadsDir, pdfFileName)
 
       try {
         // Use LibreOffice to convert PPT to PDF
-        execSync(
-          `soffice --headless --convert-to pdf --outdir "${uploadsDir}" "${filePath}"`,
-          { encoding: 'utf-8' }
-        )
+        execFileSync('soffice', ['--headless', '--convert-to', 'pdf', '--outdir', uploadsDir, filePath], {
+          stdio: 'pipe',
+        })
 
         // Remove the original PPT file
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath)
         }
 
+        if (!fs.existsSync(pdfPath)) {
+          return res.status(500).json({
+            error: 'PPT/PPTX 변환 결과 PDF를 찾을 수 없습니다.',
+          })
+        }
+
         res.json({
           success: true,
           message: 'File converted to PDF and saved successfully',
-          filename: path.basename(pdfPath),
-          originalName: req.file.originalname,
-          url: `/uploads/${path.basename(pdfPath)}`,
+          filename: pdfFileName,
+          originalName,
+          url: `/uploads/${pdfFileName}`,
         })
+        latestUploadedFile = {
+          name: pdfFileName,
+          originalName,
+          url: `/uploads/${pdfFileName}`,
+        }
       } catch (convertError) {
         console.error('Conversion error:', convertError)
-        // If conversion fails, keep the original file
-        res.json({
-          success: true,
-          message: 'File saved successfully (conversion not available)',
-          filename: req.file.filename,
-          originalName: req.file.originalname,
-          url: `/uploads/${req.file.filename}`,
-          note: 'PPT to PDF conversion requires LibreOffice to be installed',
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath)
+        }
+
+        return res.status(500).json({
+          error: 'PPT/PPTX를 PDF로 변환하지 못했습니다. PDF 파일을 직접 업로드하거나 LibreOffice를 확인해 주세요.',
         })
       }
     } else {
@@ -123,9 +169,14 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         success: true,
         message: 'PDF file saved successfully',
         filename: req.file.filename,
-        originalName: req.file.originalname,
+        originalName,
         url: `/uploads/${req.file.filename}`,
       })
+      latestUploadedFile = {
+        name: req.file.filename,
+        originalName,
+        url: `/uploads/${req.file.filename}`,
+      }
     }
   } catch (error) {
     console.error('Upload error:', error)
