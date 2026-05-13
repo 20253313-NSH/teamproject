@@ -1,0 +1,233 @@
+.page-shell {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-shell::before,
+.page-shell::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(20px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.accent-home::before {
+  width: 26rem;
+  height: 26rem;
+  background: radial-gradient(circle, rgba(94, 165, 255, 0.28), transparent 72%);
+  top: -8rem;
+  right: -8rem;
+}
+
+.accent-home::after {
+  width: 18rem;
+  height: 18rem;
+  background: radial-gradient(circle, rgba(255, 196, 104, 0.2), transparent 72%);
+  bottom: -6rem;
+  left: -5rem;
+}
+
+.accent-professor::before {
+  width: 24rem;
+  height: 24rem;
+  background: radial-gradient(circle, rgba(70, 83, 255, 0.24), transparent 72%);
+  top: -7rem;
+  right: -6rem;
+}
+
+.accent-student::before {
+  width: 24rem;
+  height: 24rem;
+  background: radial-gradient(circle, rgba(48, 216, 182, 0.22), transparent 72%);
+  top: -7rem;
+  right: -6rem;
+}
+
+.topbar,
+.page-footer,
+.content-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+.topbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 4.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(10px);
+  background: rgba(10, 10, 14, 0.48);
+}
+
+.brand {
+  color: var(--text-h);
+  text-decoration: none;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.content-wrap {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.hero-panel,
+.detail-page {
+  width: min(100%, 50rem);
+  text-align: center;
+}
+
+.hero-panel h1,
+.detail-page h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 4vw, 4.8rem);
+  line-height: 1.02;
+  letter-spacing: -0.06em;
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.28em;
+  font-size: 0.78rem;
+  color: #8ea7ff;
+}
+
+.subtitle {
+  margin: 1rem auto 0;
+  max-width: 34rem;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: rgba(232, 236, 255, 0.78);
+}
+
+.role-grid {
+  margin: 3rem auto 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  width: min(100%, 44rem);
+}
+
+.role-card {
+  min-height: 13rem;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  text-decoration: none;
+  color: inherit;
+  text-align: left;
+  background: linear-gradient(180deg, rgba(30, 31, 40, 0.95), rgba(16, 17, 23, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1.25rem 3rem rgba(0, 0, 0, 0.35);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.role-card:hover,
+.role-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: rgba(140, 170, 255, 0.5);
+  box-shadow: 0 1.4rem 3.25rem rgba(0, 0, 0, 0.42);
+}
+
+.role-card strong {
+  display: block;
+  margin-top: 1rem;
+  font-size: 1.45rem;
+  letter-spacing: -0.04em;
+}
+
+.role-card p {
+  margin-top: 0.8rem;
+  line-height: 1.65;
+  color: rgba(232, 236, 255, 0.72);
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4.4rem;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.role-badge.professor {
+  background: rgba(106, 130, 255, 0.18);
+  color: #aab8ff;
+}
+
+.role-badge.student {
+  background: rgba(46, 214, 176, 0.16);
+  color: #95eed4;
+}
+
+.detail-actions {
+  margin-top: 2rem;
+}
+
+.ghost-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95rem 1.25rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-h);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.ghost-button:hover,
+.ghost-button:focus-visible {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.page-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 4rem;
+  color: rgba(232, 236, 255, 0.52);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 720px) {
+  .topbar {
+    height: 4rem;
+  }
+
+  .content-wrap {
+    padding-inline: 1rem;
+  }
+
+  .role-grid {
+    grid-template-columns: 1fr;
+    margin-top: 2rem;
+  }
+
+  .role-card {
+    min-height: 11.5rem;
+  }
+}

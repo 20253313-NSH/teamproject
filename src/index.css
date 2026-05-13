@@ -1,0 +1,59 @@
+:root {
+  --bg: #0a0b10;
+  --bg-soft: #11131a;
+  --surface: rgba(17, 19, 26, 0.82);
+  --surface-border: rgba(255, 255, 255, 0.08);
+  --text: rgba(234, 237, 246, 0.78);
+  --text-h: #f4f7ff;
+
+  font: 18px/145% Inter, 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  color-scheme: dark;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top, rgba(60, 84, 170, 0.24), transparent 34%),
+    linear-gradient(180deg, #11131a 0%, #0a0b10 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100svh;
+  background: var(--bg);
+}
+
+#root {
+  width: 100%;
+  min-height: 100svh;
+}
+
+h1 {
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
