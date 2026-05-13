@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import * as pdfjsLib from 'pdfjs-dist'
 import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
@@ -31,6 +31,17 @@ function ProfessorNextPage() {
   const currentFileUrl = queryFile || location.state?.pdfUrl || sessionPdfUrl || storedFiles[0]?.url || resolvedFile?.url || ''
   const currentFileName = location.state?.pdfName || sessionPdfName || resolvedFile?.originalName || resolvedFile?.name || (queryFile ? queryFile.split('/').pop() : null)
 
+  const tryFixMojibake = (name) => {
+    if (!name) return name
+    try {
+      return decodeURIComponent(escape(name))
+    } catch {
+      return name
+    }
+  }
+
+  const displayFileName = tryFixMojibake(currentFileName)
+
   useEffect(() => {
     setViewerError(null)
     setPdfDocument(null)
@@ -61,7 +72,7 @@ function ProfessorNextPage() {
         setPageCount(document.numPages)
       } catch {
         if (!cancelled) {
-          setViewerError('PDF를 불러오지 못했습니다.')
+          setViewerError('PDF瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲??')
         }
       } finally {
         if (!cancelled) {
@@ -87,7 +98,7 @@ function ProfessorNextPage() {
     const renderPage = async () => {
       try {
         const page = await pdfDocument.getPage(currentPage)
-        const viewport = page.getViewport({ scale: 1.4 })
+        const viewport = page.getViewport({ scale: 0.8  })
         const canvas = canvasRef.current
         const context = canvas.getContext('2d')
 
@@ -112,7 +123,7 @@ function ProfessorNextPage() {
         await renderTask.promise
       } catch (error) {
         if (!cancelled && error?.name !== 'RenderingCancelledException') {
-          setViewerError('페이지를 표시하지 못했습니다.')
+          setViewerError('?섏씠吏瑜??쒖떆?섏? 紐삵뻽?듬땲??')
         }
       }
     }
@@ -153,7 +164,7 @@ function ProfessorNextPage() {
         }
       } catch {
         if (!cancelled) {
-          setViewerError('업로드된 PDF를 찾지 못했습니다.')
+          setViewerError('?낅줈?쒕맂 PDF瑜?李얠? 紐삵뻽?듬땲??')
         }
       }
     }
@@ -167,56 +178,52 @@ function ProfessorNextPage() {
 
   return (
     <Shell accent="accent-professor">
-      <div className="professor-next-page" style={{ display: 'grid', gap: '1.5rem' }}>
+      <div className="professor-next-page" style={{ display: 'grid', gap: '1.5rem', justifyItems: 'start', width: '100%' }}>
         <div>
           <h1>업로드된 PDF</h1>
-          <p>{currentFileName || '업로드된 파일이 없습니다.'}</p>
+          <p>{displayFileName || '업로드된 파일이 없습니다.'}</p>
         </div>
 
         {currentFileUrl ? (
-          <div style={{ display: 'grid', gap: '1rem' }}>
+          <div style={{ display: 'grid', gap: '1rem', justifyItems: 'start', width: '100%' }}>
             {isLoading && <p style={{ margin: 0 }}>PDF를 불러오는 중...</p>}
             {viewerError && <p style={{ margin: 0, color: '#b00020' }}>{viewerError}</p>}
             <div
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: '1rem',
-                flexWrap: 'wrap',
+                display: 'inline-block',
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                minHeight: 'auto',
+                padding: '0.5rem',
+                border: '1px solid rgba(0, 0, 0, 0.12)',
+                borderRadius: '12px',
+                background: '#f7f7f8',
+                overflow: 'hidden',
+                boxSizing: 'content-box',
               }}
             >
-              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <button type="button" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage <= 1 || isLoading}>
-                  이전 페이지
-                </button>
-                <button type="button" onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))} disabled={currentPage >= pageCount || isLoading}>
-                  다음 페이지
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '0.95rem', opacity: 0.8 }}>{pageCount > 0 ? `${currentPage} / ${pageCount}` : '0 / 0'}</span>
-                <a href={currentFileUrl} download={currentFileName || 'document.pdf'}>
-                  다운로드
-                </a>
-              </div>
+              <canvas ref={canvasRef} style={{ display: pdfDocument ? 'block' : 'none' }} />
             </div>
 
             <div
               style={{
                 display: 'flex',
-                justifyContent: 'center',
+                justifyContent: 'flex-start',
                 alignItems: 'center',
-                minHeight: '75vh',
-                padding: '1rem',
-                border: '1px solid rgba(0, 0, 0, 0.12)',
-                borderRadius: '16px',
-                background: '#f7f7f8',
-                overflow: 'auto',
+                gap: '0.75rem',
+                flexWrap: 'wrap',
               }}
             >
-              <canvas ref={canvasRef} style={{ maxWidth: '100%', height: 'auto', display: pdfDocument ? 'block' : 'none' }} />
+              <button type="button" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage <= 1 || isLoading}>
+                이전 페이지
+              </button>
+              <button type="button" onClick={() => setCurrentPage((page) => Math.min(pageCount, page + 1))} disabled={currentPage >= pageCount || isLoading}>
+                다음 페이지
+              </button>
+              <span style={{ fontSize: '0.95rem', opacity: 0.8 }}>{pageCount > 0 ? `${currentPage} / ${pageCount}` : '0 / 0'}</span>
+              <a href={currentFileUrl} download={currentFileName || 'document.pdf'}>
+                다운로드
+              </a>
             </div>
           </div>
         ) : (
@@ -234,3 +241,4 @@ function ProfessorNextPage() {
 }
 
 export default ProfessorNextPage
+
