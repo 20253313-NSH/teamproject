@@ -96,18 +96,19 @@ function FileUploadPage() {
 
       localStorage.setItem('professorUploadedFiles', JSON.stringify(uploadedFiles))
       sessionStorage.setItem('professorViewerPayload', JSON.stringify(uploadedFiles))
+
+      // Append to cumulative document list shown on ProfessorPage
+      const existing = (() => {
+        try { return JSON.parse(localStorage.getItem('professorDocumentList') || '[]') }
+        catch { return [] }
+      })()
+      localStorage.setItem('professorDocumentList', JSON.stringify([...existing, ...uploadedFiles]))
       sessionStorage.setItem('professorCurrentPdfUrl', uploadedFiles[0]?.url || '')
       sessionStorage.setItem('professorCurrentPdfName', uploadedFiles[0]?.name || '')
 
-      // 성공 후 교수 페이지로 이동
+      // 성공 후 글 목록으로 이동
       setTimeout(() => {
-        const pdfUrl = uploadedFiles[0]?.url || ''
-        navigate(`/professor/next${pdfUrl ? `?file=${encodeURIComponent(pdfUrl)}` : ''}`, {
-          state: {
-            pdfUrl,
-            pdfName: uploadedFiles[0]?.name || '',
-          },
-        })
+        navigate('/professor')
       }, 1500)
     } catch (error) {
       console.error('Upload error:', error)

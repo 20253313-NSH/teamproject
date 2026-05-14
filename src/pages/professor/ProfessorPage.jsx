@@ -3,23 +3,6 @@ import { Link } from 'react-router-dom'
 import Shell from '../../layouts/Shell.jsx'
 import './ProfessorPage.css'
 
-const formatDate = (value) => {
-  if (!value) {
-    return ''
-  }
-
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return ''
-  }
-
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  })
-}
-
 function ProfessorPage() {
   const [files, setFiles] = useState([])
   const [isLoading, setIsLoading] = useState(false)
@@ -55,6 +38,7 @@ function ProfessorPage() {
 
   const handleDeleteFile = async (file) => {
     const confirmed = window.confirm(`"${file.originalName}" 파일을 삭제할까요?`)
+
     if (!confirmed) {
       return
     }
@@ -71,6 +55,7 @@ function ProfessorPage() {
       }
 
       setFiles((currentFiles) => currentFiles.filter((currentFile) => currentFile.name !== file.name))
+      setError(null)
     } catch (deleteError) {
       console.error('Error deleting file:', deleteError)
       setError('파일 삭제에 실패했습니다.')
@@ -106,13 +91,8 @@ function ProfessorPage() {
                   onClick={() => handleFileClick(file)}
                 >
                   <div className="pdf-file-icon">📄</div>
-                  <div className="pdf-file-info">
-                    <div className="pdf-file-name" title={file.originalName}>
-                      {file.originalName}
-                    </div>
-                    <div className="pdf-file-date">
-                      {formatDate(file.createdAt)}
-                    </div>
+                  <div className="pdf-file-name" title={file.originalName}>
+                    {file.originalName}
                   </div>
                 </Link>
                 <button
