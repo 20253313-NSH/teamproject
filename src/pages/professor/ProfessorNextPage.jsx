@@ -1,6 +1,7 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import * as pdfjsLib from 'pdfjs-dist'
+import 'pdfjs-dist/web/pdf_viewer.css'
 import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import Shell from '../../layouts/Shell.jsx'
 
@@ -10,7 +11,9 @@ function ProfessorNextPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const canvasRef = useRef(null)
+  const textLayerRef = useRef(null)
   const renderTaskRef = useRef(null)
+  const textLayerTaskRef = useRef(null)
   const [isLoading, setIsLoading] = useState(false)
   const [viewerError, setViewerError] = useState(null)
   const [resolvedFile, setResolvedFile] = useState(null)
@@ -89,7 +92,7 @@ function ProfessorNextPage() {
   }, [currentFileUrl])
 
   useEffect(() => {
-    if (!pdfDocument || !canvasRef.current) {
+    if (!pdfDocument || !canvasRef.current || !textLayerRef.current) {
       return undefined
     }
 
@@ -98,8 +101,9 @@ function ProfessorNextPage() {
     const renderPage = async () => {
       try {
         const page = await pdfDocument.getPage(currentPage)
-        const viewport = page.getViewport({ scale: 0.8  })
+        const viewport = page.getViewport({ scale: 0.8 })
         const canvas = canvasRef.current
+        const textLayerDiv = textLayerRef.current
         const context = canvas.getContext('2d')
 
         if (!context) {
@@ -111,16 +115,29 @@ function ProfessorNextPage() {
         canvas.height = Math.floor(viewport.height * devicePixelRatio)
         canvas.style.width = `${Math.floor(viewport.width)}px`
         canvas.style.height = `${Math.floor(viewport.height)}px`
+        textLayerDiv.style.width = `${Math.floor(viewport.width)}px`
+        textLayerDiv.style.height = `${Math.floor(viewport.height)}px`
+        textLayerDiv.innerHTML = ''
 
         renderTaskRef.current?.cancel?.()
+        textLayerTaskRef.current?.cancel?.()
         const renderTask = page.render({
           canvasContext: context,
           viewport,
           transform: devicePixelRatio !== 1 ? [devicePixelRatio, 0, 0, devicePixelRatio, 0, 0] : null,
         })
 
+        const textContent = await page.getTextContent()
+        const textLayer = new pdfjsLib.TextLayer({
+          textContentSource: textContent,
+          container: textLayerDiv,
+          viewport,
+        })
+        textLayerTaskRef.current = textLayer
+
         renderTaskRef.current = renderTask
         await renderTask.promise
+        await textLayer.render()
       } catch (error) {
         if (!cancelled && error?.name !== 'RenderingCancelledException') {
           setViewerError('?섏씠吏瑜??쒖떆?섏? 紐삵뻽?듬땲??')
@@ -133,12 +150,14 @@ function ProfessorNextPage() {
     return () => {
       cancelled = true
       renderTaskRef.current?.cancel?.()
+      textLayerTaskRef.current?.cancel?.()
     }
   }, [pdfDocument, currentPage])
 
   useEffect(
     () => () => {
       renderTaskRef.current?.cancel?.()
+      textLayerTaskRef.current?.cancel?.()
       pdfDocument?.destroy?.()
     },
     [pdfDocument],
@@ -178,6 +197,54 @@ function ProfessorNextPage() {
 
   return (
     <Shell accent="accent-professor">
+      <style>{`
+        .pdf-page-stage {
+          position: relative;
+          display: inline-block;
+          line-height: 0;
+        }
+
+        .pdf-page-canvas {
+          display: block;
+          position: relative;
+          z-index: 0;
+          user-select: none;
+          pointer-events: none;
+        }
+
+        .pdf-page-text-layer {
+          position: absolute;
+          inset: 0;
+          z-index: 1;
+          overflow: clip;
+          color: transparent;
+          line-height: 1;
+          transform-origin: 0 0;
+          caret-color: CanvasText;
+          -webkit-text-size-adjust: none;
+          -moz-text-size-adjust: none;
+          text-size-adjust: none;
+          user-select: text;
+          cursor: text;
+        }
+
+        .pdf-page-text-layer span,
+        .pdf-page-text-layer br {
+          position: absolute;
+          white-space: pre;
+          color: transparent;
+          cursor: text;
+          transform-origin: 0 0;
+        }
+
+        .pdf-page-text-layer ::selection {
+          background: rgba(0, 120, 215, 0.28);
+        }
+
+        .pdf-page-text-layer ::-moz-selection {
+          background: rgba(0, 120, 215, 0.28);
+        }
+      `}</style>
       <div className="professor-next-page" style={{ display: 'grid', gap: '1.5rem', justifyItems: 'start', width: '100%' }}>
         <div>
           <h1>업로드된 PDF</h1>
@@ -189,10 +256,9 @@ function ProfessorNextPage() {
             {isLoading && <p style={{ margin: 0 }}>PDF를 불러오는 중...</p>}
             {viewerError && <p style={{ margin: 0, color: '#b00020' }}>{viewerError}</p>}
             <div
+              className="pdf-page-stage"
               style={{
                 display: 'inline-block',
-                justifyContent: 'flex-start',
-                alignItems: 'flex-start',
                 minHeight: 'auto',
                 padding: '0.5rem',
                 border: '1px solid rgba(0, 0, 0, 0.12)',
@@ -202,7 +268,8 @@ function ProfessorNextPage() {
                 boxSizing: 'content-box',
               }}
             >
-              <canvas ref={canvasRef} style={{ display: pdfDocument ? 'block' : 'none' }} />
+              <canvas ref={canvasRef} className="pdf-page-canvas" style={{ display: pdfDocument ? 'block' : 'none' }} />
+              <div ref={textLayerRef} className="pdf-page-text-layer" aria-hidden="false" />
             </div>
 
             <div

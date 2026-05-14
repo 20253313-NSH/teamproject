@@ -98,52 +98,6 @@ app.get('/api/latest-upload', (_request, response) => {
   response.json(latestUploadedFile)
 })
 
-app.get('/api/uploads', (_request, response) => {
-  try {
-    const files = fs.readdirSync(uploadsDir)
-      .filter(file => ['.pdf', '.ppt', '.pptx'].includes(path.extname(file).toLowerCase()))
-      .map(file => ({
-        name: file,
-        originalName: file.includes('-') ? file.substring(file.lastIndexOf('-') + 1) : file,
-        url: `/uploads/${file}`,
-        path: path.join(uploadsDir, file),
-        createdAt: fs.statSync(path.join(uploadsDir, file)).birthtime.toISOString(),
-      }))
-      .sort((a, b) => {
-        const aStats = fs.statSync(a.path)
-        const bStats = fs.statSync(b.path)
-        return bStats.mtime - aStats.mtime
-      })
-    
-    response.json(files)
-  } catch (error) {
-    console.error('List uploads error:', error)
-    response.status(500).json({ error: 'Failed to list uploads' })
-  }
-})
-
-app.delete('/api/uploads/:name', (request, response) => {
-  try {
-    const fileName = path.basename(request.params.name)
-    const filePath = path.join(uploadsDir, fileName)
-
-    if (!fs.existsSync(filePath)) {
-      return response.status(404).json({ error: 'File not found' })
-    }
-
-    fs.unlinkSync(filePath)
-
-    if (latestUploadedFile && latestUploadedFile.name === fileName) {
-      latestUploadedFile = null
-    }
-
-    response.json({ success: true, message: 'File deleted successfully' })
-  } catch (error) {
-    console.error('Delete upload error:', error)
-    response.status(500).json({ error: 'Failed to delete upload' })
-  }
-})
-
 // File upload endpoint
 app.post('/api/upload', upload.single('file'), async (req, res) => {
   try {

@@ -19,7 +19,7 @@
 .accent-home::before {
   width: 26rem;
   height: 26rem;
-  background: radial-gradient(circle, rgba(94, 165, 255, 0.28), transparent 72%);
+  background: radial-gradient(circle, rgba(2, 46, 103, 0.28), transparent 72%);
   top: -8rem;
   right: -8rem;
 }

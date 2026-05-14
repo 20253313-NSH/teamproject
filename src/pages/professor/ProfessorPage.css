@@ -1,8 +1,8 @@
 .professor-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 3rem;
+  align-items: flex-start;
+  gap: 1.5rem;
   width: 100%;
 }
 
@@ -47,4 +47,96 @@
   color: white;
   font-weight: 300;
   line-height: 1;
+}
+
+.pdf-files-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.pdf-file-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  background: #f7f7f8;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.pdf-file-link {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  text-decoration: none;
+  color: inherit;
+}
+
+.pdf-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.pdf-file-item:hover {
+  border-color: rgba(0, 0, 0, 0.24);
+  background: #f0f0f1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pdf-file-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.pdf-file-name {
+  font-size: 0.875rem;
+  text-align: left;
+  color: #1f1f1f;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  max-width: 100%;
+}
+
+.pdf-file-date {
+  font-size: 0.75rem;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.pdf-file-delete-button {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  padding: 0.7rem 1rem;
+  background: rgba(211, 47, 47, 0.12);
+  color: #c62828;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pdf-file-delete-button:hover:not(:disabled) {
+  background: rgba(211, 47, 47, 0.18);
+}
+
+.pdf-file-delete-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
